@@ -9,7 +9,7 @@ export async function fetchData(searchQuery) {
     const res = await axios.get(
       `${BASE_URL}?key=${API_KEY}&q=${searchQuery}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40`
     );
-    console.log(res.data);
+    // console.log(res.data);
     return res.data;
   } catch (error) {
     Notiflix.Notify.failure('Something went wrong in "fetchData"');
