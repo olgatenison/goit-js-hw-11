@@ -41,6 +41,7 @@ async function onSubmit(evt) {
   if (cards.length < data.totalHits) {
     refs.loadMoreBtn.classList.remove('is-hidden');
   }
+  showTotalHitsMessage(data.total);
   // else {
   //   refs.loadMoreBtn.classList.add('is-hidden');
   // }
@@ -48,7 +49,8 @@ async function onSubmit(evt) {
 
 async function loadMoreResults() {
   currentPage++;
-  // Використовує earchQuery
+
+  // Використовує searchQuery
   const data = await fetchData(searchQuery, currentPage);
   const cards = data.hits;
   console.log(cards);
@@ -56,12 +58,28 @@ async function loadMoreResults() {
   const markup = createMarkup(cards);
   refs.galleryContainer.insertAdjacentHTML('beforeend', markup);
   lightbox.refresh();
+
   console.log(currentPage * 40);
   console.log(data.totalHits);
   console.log(cards.length);
+  console.log(currentPage);
+
   if (currentPage * 40 >= data.totalHits) {
+    Notiflix.Notify.info(
+      "We're sorry, but you've reached the end of search results."
+    );
     refs.loadMoreBtn.classList.add('is-hidden'); // ховаємо кнопку
   }
+
+  // Плавна прокрутка сторінки
+  const { height: cardHeight } = document
+    .querySelector('.gallery')
+    .lastElementChild.getBoundingClientRect();
+
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: 'smooth',
+  });
 }
 
 function createMarkup(cards) {
@@ -92,6 +110,10 @@ function createMarkup(cards) {
     `;
     })
     .join('');
+}
+
+function showTotalHitsMessage(total) {
+  Notiflix.Notify.success(`Hooray! We found ${total} images.`);
 }
 
 // підключаємо галерею
