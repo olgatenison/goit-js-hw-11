@@ -1,7 +1,5 @@
-// import axios from 'axios';
 import Notiflix from 'notiflix';
 import { fetchData } from './api-service';
-
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
@@ -10,14 +8,22 @@ const refs = {
   galleryContainer: document.querySelector('.gallery'),
   loadMoreBtn: document.querySelector('.load-more'),
 };
+
 refs.loadMoreBtn.classList.add('is-hidden');
 
 refs.searchForm.addEventListener('submit', onSubmit);
+refs.loadMoreBtn.addEventListener('click', loadMoreResults);
+
+let currentPage = 1;
+let searchQuery = '';
 
 async function onSubmit(evt) {
   evt.preventDefault();
+  refs.galleryContainer.innerHTML = '';
+
   const searchQuery = evt.target.elements.searchQuery.value;
-  const data = await fetchData(searchQuery);
+  currentPage = 1; // зброс поточної сторінки
+  const data = await fetchData(searchQuery, currentPage);
 
   if (!data.hits.length) {
     Notiflix.Notify.failure(
@@ -26,13 +32,29 @@ async function onSubmit(evt) {
     // refs.loadMoreBtn.classList.add('is-hidden');
     return;
   }
+
   const cards = data.hits;
-
   const markup = createMarkup(cards);
-
-  // Добавьте разметку в контейнер галереи
-  refs.galleryContainer.innerHTML = markup;
+  refs.galleryContainer.insertAdjacentHTML('beforeend', markup);
   lightbox.refresh();
+
+  if (cards.length < data.totalHits) {
+    refs.loadMoreBtn.classList.remove('is-hidden');
+  } else {
+    refs.loadMoreBtn.classList.add('is-hidden');
+  }
+}
+
+async function loadMoreResults() {
+  currentPage++;
+  // Використовує earchQuery
+  const data = await fetchData(searchQuery, currentPage);
+  const cards = data.hits;
+  const markup = createMarkup(cards);
+  refs.galleryContainer.insertAdjacentHTML('beforeend', markup);
+  lightbox.refresh();
+  console.log(cards.length);
+  console.log(data.totalHits);
 }
 
 function createMarkup(cards) {
@@ -56,7 +78,7 @@ function createMarkup(cards) {
         <div class="info">
           <p class="info-item"><b>${likes}</b></p>
           <p class="info-item"><b>${views}</b></p>
-          <p class "info-item"><b>${comments}</b></p>
+          <p class="info-item"><b>${comments}</b></p>
           <p class="info-item"><b>${downloads}</b></p>
         </div>
       </div>
