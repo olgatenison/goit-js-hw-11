@@ -21,7 +21,7 @@ async function onSubmit(evt) {
   evt.preventDefault();
   refs.galleryContainer.innerHTML = '';
 
-  const searchQuery = evt.target.elements.searchQuery.value;
+  searchQuery = evt.target.elements.searchQuery.value;
   currentPage = 1; // зброс поточної сторінки
   const data = await fetchData(searchQuery, currentPage);
 
@@ -40,9 +40,10 @@ async function onSubmit(evt) {
 
   if (cards.length < data.totalHits) {
     refs.loadMoreBtn.classList.remove('is-hidden');
-  } else {
-    refs.loadMoreBtn.classList.add('is-hidden');
   }
+  // else {
+  //   refs.loadMoreBtn.classList.add('is-hidden');
+  // }
 }
 
 async function loadMoreResults() {
@@ -50,11 +51,17 @@ async function loadMoreResults() {
   // Використовує earchQuery
   const data = await fetchData(searchQuery, currentPage);
   const cards = data.hits;
+  console.log(cards);
+  console.log(searchQuery);
   const markup = createMarkup(cards);
   refs.galleryContainer.insertAdjacentHTML('beforeend', markup);
   lightbox.refresh();
-  console.log(cards.length);
+  console.log(currentPage * 40);
   console.log(data.totalHits);
+  console.log(cards.length);
+  if (currentPage * 40 >= data.totalHits) {
+    refs.loadMoreBtn.classList.add('is-hidden'); // ховаємо кнопку
+  }
 }
 
 function createMarkup(cards) {
